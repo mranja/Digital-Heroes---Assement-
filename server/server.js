@@ -6,16 +6,31 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// ======================
+// ✅ CORS FIX (IMPORTANT)
+// ======================
+app.use(cors({
+  origin: [
+    "http://localhost:5173", // local frontend
+    "https://digital-heroes-neon.vercel.app" // your deployed frontend
+  ],
+  credentials: true
+}));
+
+// ======================
+// ✅ MIDDLEWARE
+// ======================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const nowIso = new Date().toISOString();
 
-const nextDate = (days) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+const nextDate = (days) =>
+  new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 
-// Mock DB for zero-config local testing.
+// ======================
+// ✅ MOCK DATABASE
+// ======================
 global.db = {
   users: [
     {
@@ -51,6 +66,7 @@ global.db = {
       }
     }
   ],
+
   scores: [
     {
       id: 1,
@@ -64,34 +80,43 @@ global.db = {
       ]
     }
   ],
+
   charities: [
     {
       id: 1,
       name: 'Golfers Against Cancer',
-      description: 'Funding targeted cancer research through community-backed golf programs.',
+      description:
+        'Funding targeted cancer research through community-backed golf programs.',
       category: 'Health',
       country: 'United States',
       featured: true,
       imageUrl: '/images/charity-health.svg',
-      upcomingEvents: [{ id: 91, title: 'Community Golf Day', date: '2026-07-12' }],
+      upcomingEvents: [
+        { id: 91, title: 'Community Golf Day', date: '2026-07-12' }
+      ],
       totalDonations: 450
     },
     {
       id: 2,
       name: 'Fairway Youth Futures',
-      description: 'Opening access to junior golf and mentorship for underserved teens.',
+      description:
+        'Opening access to junior golf and mentorship for underserved teens.',
       category: 'Youth',
       country: 'United States',
       featured: false,
       imageUrl: '/images/charity-youth.svg',
-      upcomingEvents: [{ id: 92, title: 'Junior Mentorship Camp', date: '2026-06-21' }],
+      upcomingEvents: [
+        { id: 92, title: 'Junior Mentorship Camp', date: '2026-06-21' }
+      ],
       totalDonations: 120
     }
   ],
+
   draws: [],
   proofs: [],
   jackpotRollover: 0,
   lastDrawSimulation: null,
+
   notifications: [
     {
       id: 1,
@@ -101,12 +126,15 @@ global.db = {
       createdAt: nowIso
     }
   ],
+
   emailOutbox: [],
   corporateAccounts: [],
   campaigns: []
 };
 
-// Routes
+// ======================
+// ✅ ROUTES
+// ======================
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const scoreRoutes = require('./routes/scores');
@@ -121,28 +149,47 @@ app.use('/api/draws', drawRoutes);
 app.use('/api/charities', charityRoutes);
 app.use('/api/payment', paymentRoutes);
 
-// JSON/body parsing error safety
+// ======================
+// ✅ HEALTH CHECK
+// ======================
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Digital Heroes API is running 🚀'
+  });
+});
+
+// ======================
+// ✅ ROOT ROUTE (Render needs this)
+// ======================
+app.get('/', (req, res) => {
+  res.send('Backend running 🚀');
+});
+
+// ======================
+// ✅ ERROR HANDLING
+// ======================
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ message: 'Invalid JSON payload' });
   }
-  return next(err);
+  next(err);
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Digital Heroes API is running.' });
-});
-
-// Final fallback error handler to keep server stable on unexpected route errors
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
+  console.error("🔥 ERROR:", err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal server error'
+  });
 });
 
+// ======================
+// ✅ START SERVER
+// ======================
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
 module.exports = app;
