@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { Trophy, ShieldCheck, HeartHandshake, LogOut, Sparkles } from 'lucide-react';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
@@ -96,7 +96,7 @@ function Navigation() {
 
 function App() {
   return (
-    <Router>
+    <>
       <Navigation />
       <main className="page-shell">
         <Routes>
@@ -119,7 +119,7 @@ function App() {
           } />
         </Routes>
       </main>
-    </Router>
+    </>
   );
 }
 
